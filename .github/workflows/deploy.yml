@@ -1,0 +1,56 @@
+name: Build and Deploy Text
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "message.txt"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build HTML
+        run: |
+          mkdir -p public
+
+          echo '<!DOCTYPE html>' > public/index.html
+          echo '<html>' >> public/index.html
+          echo '<head>' >> public/index.html
+          echo '<meta charset="UTF-8">' >> public/index.html
+          echo '<title>GitHub Actions Demo</title>' >> public/index.html
+          echo '</head>' >> public/index.html
+          echo '<body>' >> public/index.html
+          echo '<h1>GitHub Actions 실습</h1>' >> public/index.html
+          echo '<pre>' >> public/index.html
+          cat message.txt >> public/index.html
+          echo '</pre>' >> public/index.html
+          echo '</body>' >> public/index.html
+          echo '</html>' >> public/index.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
